@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e1830">
+  <meta name="description" content="在安卓手机上拍照，添加可编辑日期时间和地址水印，并保存到本地。">
+  <title>现场水印相机</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23114ccf'/%3E%3Cpath d='M17 23h8l3-5h9l3 5h7a5 5 0 0 1 5 5v18H12V28a5 5 0 0 1 5-5Z' fill='white'/%3E%3Ccircle cx='32' cy='35' r='9' fill='%230e1830'/%3E%3Ccircle cx='32' cy='35' r='5' fill='%23f2b705'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #0e1830;
+      --ink-soft: #41506b;
+      --paper: #f4f7fb;
+      --surface: #ffffff;
+      --line: #cfd7e4;
+      --blue: #114ccf;
+      --blue-dark: #0a328f;
+      --amber: #f2b705;
+      --amber-dark: #c88e00;
+      --danger: #b42318;
+      --ok: #137a46;
+      --shadow: 0 14px 36px rgba(8, 30, 72, .16);
+      --radius: 14px;
+      --font: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        linear-gradient(90deg, transparent 0 calc(50% - 1px), rgba(17,76,207,.035) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+        var(--paper);
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+    ::selection { color: white; background: var(--blue); }
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+    .app {
+      width: min(100%, 620px);
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0 auto;
+      background: var(--surface);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 24px 80px rgba(0,0,0,.1);
+    }
+
+    .topbar {
+      min-height: 66px;
+      padding: max(12px, env(safe-area-inset-top)) 18px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.96);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .brand-mark {
+      width: 38px; height: 38px; flex: 0 0 auto;
+      display: grid; place-items: center;
+      background: var(--blue); color: white;
+      border-radius: 10px 10px 3px 10px;
+    }
+    .brand-mark svg { width: 22px; height: 22px; }
+    .brand h1 { margin: 0; font-size: 1.05rem; line-height: 1.15; letter-spacing: -.02em; }
+    .brand p { margin: 3px 0 0; color: var(--ink-soft); font-size: .76rem; line-height: 1.2; }
+    .local-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 9px;
+      color: var(--ok); background: #e8f6ef;
+      border-radius: 999px;
+      font-size: .75rem; font-weight: 700; white-space: nowrap;
+    }
+    .local-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    .camera-stage {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      max-height: 62vh;
+      min-height: 420px;
+      overflow: hidden;
+      background: #111827;
+      isolation: isolate;
+    }
+
+    .camera-stage::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+        radial-gradient(circle at 50% 30%, #34415a 0, #172033 46%, #0d1423 100%);
+      background-size: 33.333% 33.333%, 33.333% 33.333%, auto;
+      z-index: -2;
+    }
+
+    .camera-stage::after {
+      content: "";
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(4,8,18,.22), transparent 30%, transparent 64%, rgba(4,8,18,.55));
+      z-index: 3;
+    }
+
+    video, #previewCanvas {
+      width: 100%; height: 100%; display: none;
+      object-fit: contain; background: #080d18;
+    }
+    video.active, #previewCanvas.active { display: block; }
+    #previewCanvas.stamped { animation: capture-stamp .48s cubic-bezier(.16,1,.3,1); }
+
+    @keyframes capture-stamp {
+      0% { transform: scale(.975); filter: brightness(1.45); }
+      52% { transform: scale(1.006); filter: brightness(1); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    .empty-state {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      padding: 30px; text-align: center; color: white;
+      z-index: 1;
+    }
+    .empty-state.hidden { display: none; }
+    .empty-inner { max-width: 290px; }
+    .lens {
+      width: 86px; height: 86px; margin: 0 auto 20px;
+      display: grid; place-items: center;
+      border: 1px solid rgba(255,255,255,.34);
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 14px rgba(255,255,255,.05), 0 10px 30px rgba(0,0,0,.28);
+    }
+    .lens svg { width: 34px; height: 34px; }
+    .empty-state h2 { margin: 0 0 8px; font-size: 1.35rem; letter-spacing: -.025em; }
+    .empty-state p { margin: 0; color: #c9d3e6; font-size: .92rem; }
+    .empty-actions { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+    .empty-action {
+      min-height: 48px; padding: 10px 16px;
+      border: 1px solid rgba(255,255,255,.42); border-radius: 10px;
+      color: white; background: rgba(7,13,25,.52);
+      font-weight: 800; cursor: pointer;
+    }
+    .empty-action.primary { color: var(--ink); background: var(--amber); border-color: var(--amber); }
+
+    .stage-status {
+      position: absolute; top: 16px; left: 16px; z-index: 5;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 999px;
+      background: rgba(6, 12, 27, .64);
+      color: white; font-size: .75rem; font-weight: 700;
+      backdrop-filter: blur(8px);
+    }
+    .stage-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #a8b3c7; }
+    .stage-status.live::before { background: #45e08d; box-shadow: 0 0 0 4px rgba(69,224,141,.18); }
+
+    .watermark-preview {
+      position: absolute; z-index: 6;
+      max-width: calc(100% - 32px);
+      color: white;
+      transition: inset .4s cubic-bezier(.16,1,.3,1), transform .4s cubic-bezier(.16,1,.3,1);
+      filter: drop-shadow(0 6px 13px rgba(0,0,0,.34));
+    }
+    .watermark-preview.bottom-left { left: 16px; bottom: 18px; }
+    .watermark-preview.bottom-right { right: 16px; bottom: 18px; text-align: right; }
+    .watermark-preview.top-left { left: 16px; top: 60px; }
+    .watermark-preview.top-right { right: 16px; top: 60px; text-align: right; }
+    .watermark-preview.ink { color: white; }
+    .watermark-preview.plate { color: white; }
+    .wm-time {
+      width: fit-content; margin-bottom: 3px;
+      padding: 4px 9px;
+      background: rgba(14,24,48,.82);
+      font-size: clamp(.68rem, 2.7vw, .8rem); font-variant-numeric: tabular-nums;
+      letter-spacing: .04em;
+    }
+    .bottom-right .wm-time, .top-right .wm-time { margin-left: auto; }
+    .wm-address {
+      display: inline-block;
+      max-width: 100%;
+      padding: 8px 11px 9px;
+      background: var(--blue);
+      border-bottom: 4px solid var(--amber);
+      font-size: clamp(.9rem, 3.8vw, 1.12rem); font-weight: 800;
+      line-height: 1.28; letter-spacing: -.015em;
+      text-wrap: balance;
+    }
+    .wm-address.long { font-size: .78rem; }
+    .ink .wm-address { background: rgba(7,13,25,.82); border-bottom-color: white; }
+
+    .capture-console {
+      position: absolute; z-index: 8;
+      left: 50%; bottom: 18px; transform: translateX(-50%);
+      display: none; align-items: center; justify-content: center;
+    }
+    .streaming .capture-console { display: flex; }
+    .streaming .watermark-preview { bottom: 108px; }
+    .shutter {
+      width: 72px; height: 72px; padding: 7px;
+      border: 2px solid rgba(255,255,255,.9); border-radius: 50%;
+      background: rgba(5,10,20,.35); cursor: pointer;
+      box-shadow: 0 8px 28px rgba(0,0,0,.32);
+    }
+    .shutter::before {
+      content: ""; display: block; width: 100%; height: 100%;
+      border-radius: 50%; background: white;
+      transition: transform .16s ease-out, background .16s ease-out;
+    }
+    .shutter:active::before { transform: scale(.84); background: var(--amber); }
+
+    .editor { background: var(--surface); scroll-padding-bottom: 112px; }
+    .section-rail {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      min-height: 46px; padding: 9px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #e9eef6;
+    }
+    .section-rail strong { font-size: .82rem; letter-spacing: .05em; }
+    .section-rail span { color: var(--ink-soft); font-size: .75rem; }
+
+    .fields { padding: 16px 18px 8px; display: grid; gap: 14px; }
+    .field { display: grid; gap: 7px; }
+    .label-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    label { font-size: .86rem; font-weight: 800; }
+    .text-button {
+      min-height: 44px; border: 0; padding: 6px 0;
+      color: var(--blue); background: none;
+      font-size: .78rem; font-weight: 800; cursor: pointer;
+      text-underline-offset: 3px;
+    }
+    input[type="text"], input[type="datetime-local"] {
+      width: 100%; min-height: 50px;
+      border: 1px solid #aeb9ca; border-radius: 10px;
+      padding: 11px 13px;
+      color: var(--ink); background: white;
+      font-size: 1rem;
+      transition: border-color .16s ease-out, box-shadow .16s ease-out;
+      scroll-margin-bottom: 112px;
+    }
+    input:hover { border-color: #7d8ba3; }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(17,76,207,.14); outline: 0; }
+    .help { margin: 0; color: var(--ink-soft); font-size: .76rem; }
+
+    .settings {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+      padding: 8px 18px 18px;
+    }
+    .setting-group { display: grid; gap: 7px; }
+    .setting-title { font-size: .78rem; font-weight: 800; }
+    .segmented {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      border: 1px solid #aeb9ca; border-radius: 10px; overflow: hidden;
+      background: #f7f9fc;
+    }
+    .segmented button {
+      min-height: 44px; border: 0; border-right: 1px solid #c9d1de;
+      background: transparent; cursor: pointer;
+      font-size: .78rem; font-weight: 750;
+    }
+    .segmented button:last-child { border-right: 0; }
+    .segmented button[aria-pressed="true"] { color: white; background: var(--blue); }
+
+    .actions {
+      position: relative; z-index: 18;
+      display: grid; grid-template-columns: 1fr 1.55fr; gap: 10px;
+      padding: 12px 18px max(14px, env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 -10px 30px rgba(14,24,48,.08);
+      backdrop-filter: blur(12px);
+    }
+    .btn {
+      min-height: 52px; border-radius: 11px; border: 1px solid transparent;
+      padding: 10px 14px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      font-size: .92rem; font-weight: 850; cursor: pointer;
+      transition: transform .16s ease-out, background .16s ease-out, border-color .16s ease-out;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn svg { width: 20px; height: 20px; }
+    .btn-secondary { border-color: #aeb9ca; background: white; }
+    .btn-secondary:hover { background: #f0f4fa; border-color: #8290a6; }
+    .btn-primary { color: white; background: var(--blue); box-shadow: 0 9px 20px rgba(17,76,207,.26); }
+    .btn-primary:hover { background: var(--blue-dark); }
+    .btn:disabled { cursor: not-allowed; color: #8490a3; background: #e5e9f0; border-color: #d6dce6; box-shadow: none; transform: none; }
+    #fileInput { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+    .privacy-note {
+      margin: 0; padding: 12px 18px 20px;
+      color: var(--ink-soft); font-size: .75rem; text-align: center;
+    }
+
+    .toast {
+      position: fixed; z-index: 100;
+      left: 50%; bottom: max(92px, calc(env(safe-area-inset-bottom) + 82px));
+      width: min(calc(100% - 32px), 420px);
+      padding: 12px 14px;
+      transform: translate(-50%, 20px);
+      border-radius: 10px;
+      color: white; background: var(--ink);
+      box-shadow: var(--shadow);
+      opacity: 0; pointer-events: none;
+      font-size: .86rem; font-weight: 650;
+      transition: opacity .24s ease-out, transform .34s cubic-bezier(.16,1,.3,1);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.error { background: var(--danger); }
+
+    @media (min-width: 760px) {
+      body { padding: 28px 0; }
+      .app { min-height: calc(100vh - 56px); border-radius: 18px; overflow: clip; }
+      .topbar { position: relative; }
+      .camera-stage { max-height: 670px; }
+      .editor { scroll-padding-bottom: 0; }
+    }
+
+    @media (max-width: 390px) {
+      .local-badge { width: 34px; height: 34px; justify-content: center; padding: 0; font-size: 0; }
+      .local-badge::before { width: 9px; height: 9px; }
+      .camera-stage { min-height: 390px; }
+      .settings { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!--
+  THESIS: The editable address is the visual anchor—a civic street plate laid over the camera—not another generic rounded mobile form.
+  OWN-WORLD: Daylight white and mineral gray surround municipal blue, ink navy, and one safety amber capture signal; square-cut rails and address-plate geometry organize every state.
+  STORY: Open the camera, verify time and address, capture, then save one locally processed image.
+  FIRST VIEWPORT: A slim utility header, dominant viewfinder with the live blue address plate inside it, compact metadata rail, and thumb-reachable primary action.
+  FORM: City wayfinding and enamel address signage, grounded direction 7, seed ec710ded.
+  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+  -->
+  <main class="app" aria-label="现场水印相机">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.6-2.4h6.8L17 8.5h3v9.4H4z"/><circle cx="12" cy="13" r="3.2"/></svg>
+        </div>
+        <div>
+          <h1>现场水印相机</h1>
+          <p id="statusText">等待拍摄</p>
+        </div>
+      </div>
+      <span class="local-badge">本机处理</span>
+    </header>
+
+    <section class="camera-stage" id="cameraStage" aria-label="照片预览">
+      <video id="video" playsinline muted></video>
+      <canvas id="previewCanvas" aria-label="带水印照片预览"></canvas>
+
+      <div class="empty-state" id="emptyState">
+        <div class="empty-inner">
+          <div class="lens" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.6-2.4h6.8L17 8.5h3v9.4H4z"/><circle cx="12" cy="13" r="3.2"/></svg>
+          </div>
+          <h2>先拍一张现场照片</h2>
+          <p>点击下方按钮打开后置相机，也可以从相册选择照片。</p>
+          <div class="empty-actions">
+            <button class="empty-action primary" id="emptyCameraButton" type="button">打开相机</button>
+            <button class="empty-action" id="emptyPickButton" type="button">选择照片</button>
+          </div>
+        </div>
+      </div>
+
+      <span class="stage-status" id="stageStatus">尚未拍摄</span>
+      <div class="watermark-preview bottom-left plate" id="watermarkPreview" aria-live="polite">
+        <div class="wm-time" id="wmTime"></div>
+        <div class="wm-address" id="wmAddress"></div>
+      </div>
+
+      <div class="capture-console">
+        <button class="shutter" id="shutterButton" type="button" aria-label="拍摄照片"></button>
+      </div>
+    </section>
+
+    <section class="editor" aria-label="水印设置">
+      <div class="section-rail">
+        <strong>水印信息</strong>
+        <span>修改后立即预览</span>
+      </div>
+
+      <div class="fields">
+        <div class="field">
+          <div class="label-row">
+            <label for="dateTime">日期与时间</label>
+            <button class="text-button" id="resetTime" type="button">恢复当前时间</button>
+          </div>
+          <input id="dateTime" type="datetime-local" step="1">
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="address">地址</label>
+            <button class="text-button" id="resetAddress" type="button">恢复默认地址</button>
+          </div>
+          <input id="address" type="text" maxlength="100" autocomplete="street-address" placeholder="请输入地址">
+          <p class="help">当前是演示默认地址，不会获取定位；上线前可一处替换。</p>
+        </div>
+      </div>
+
+      <div class="settings">
+        <div class="setting-group">
+          <span class="setting-title">水印位置</span>
+          <div class="segmented" id="positionControl" aria-label="水印位置">
+            <button type="button" data-position="bottom-left" aria-pressed="true">左下</button>
+            <button type="button" data-position="bottom-right" aria-pressed="false">右下</button>
+          </div>
+        </div>
+        <div class="setting-group">
+          <span class="setting-title">水印样式</span>
+          <div class="segmented" id="styleControl" aria-label="水印样式">
+            <button type="button" data-style="plate" aria-pressed="true">蓝牌</button>
+            <button type="button" data-style="ink" aria-pressed="false">黑底</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" id="pickButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m4 17 5-4 3 2 3-3 5 5"/></svg>
+          选择照片
+        </button>
+        <button class="btn btn-primary" id="primaryButton" type="button">
+          <svg id="primaryIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h3l1.6-2.4h6.8L17 8.5h3v9.4H4z"/><circle cx="12" cy="13" r="3.2"/></svg>
+          <span id="primaryLabel">打开相机</span>
+        </button>
+        <input id="fileInput" type="file" accept="image/*">
+      </div>
+      <p class="privacy-note">照片与地址默认只在本机浏览器内处理，不会主动上传。</p>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const DEFAULT_ADDRESS = "上海市浦东新区张江路 88 号";
+      const state = {
+        stream: null,
+        hasPhoto: false,
+        position: "bottom-left",
+        style: "plate",
+        sourceCanvas: document.createElement("canvas")
+      };
+
+      const video = document.getElementById("video");
+      const previewCanvas = document.getElementById("previewCanvas");
+      const cameraStage = document.getElementById("cameraStage");
+      const emptyState = document.getElementById("emptyState");
+      const stageStatus = document.getElementById("stageStatus");
+      const statusText = document.getElementById("statusText");
+      const watermarkPreview = document.getElementById("watermarkPreview");
+      const wmTime = document.getElementById("wmTime");
+      const wmAddress = document.getElementById("wmAddress");
+      const dateTime = document.getElementById("dateTime");
+      const address = document.getElementById("address");
+      const primaryButton = document.getElementById("primaryButton");
+      const primaryLabel = document.getElementById("primaryLabel");
+      const primaryIcon = document.getElementById("primaryIcon");
+      const pickButton = document.getElementById("pickButton");
+      const fileInput = document.getElementById("fileInput");
+      const toast = document.getElementById("toast");
+
+      const pad = value => String(value).padStart(2, "0");
+
+      function localInputValue(date = new Date()) {
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+      }
+
+      function formattedTime() {
+        const value = dateTime.value;
+        if (!value) return "请选择日期时间";
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return value.replace("T", " ");
+        return `${parsed.getFullYear()}.${pad(parsed.getMonth() + 1)}.${pad(parsed.getDate())}  ${pad(parsed.getHours())}:${pad(parsed.getMinutes())}:${pad(parsed.getSeconds())}`;
+      }
+
+      function showToast(message, type = "info") {
+        toast.textContent = message;
+        toast.classList.toggle("error", type === "error");
+        toast.classList.add("show");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove("show"), 3200);
+      }
+
+      function syncWatermark() {
+        wmTime.textContent = formattedTime();
+        wmAddress.textContent = address.value.trim() || "请输入地址";
+        wmAddress.classList.toggle("long", Array.from(address.value.trim()).length > 40);
+        watermarkPreview.className = `watermark-preview ${state.position} ${state.style}`;
+        if (state.hasPhoto) renderPreview();
+      }
+
+      function setStatus(kind) {
+        const copy = {
+          idle: ["尚未拍摄", "等待拍摄"],
+          live: ["相机已开启", "正在取景"],
+          ready: ["水印预览", "可以保存"],
+          loading: ["正在处理", "正在处理照片"]
+        }[kind];
+        stageStatus.textContent = copy[0];
+        statusText.textContent = copy[1];
+        stageStatus.classList.toggle("live", kind === "live");
+      }
+
+      function setPrimaryMode(mode) {
+        if (mode === "camera") {
+          primaryLabel.textContent = "打开相机";
+          primaryIcon.innerHTML = '<path d="M4 8.5h3l1.6-2.4h6.8L17 8.5h3v9.4H4z"/><circle cx="12" cy="13" r="3.2"/>';
+          primaryButton.disabled = false;
+        } else if (mode === "save") {
+          primaryLabel.textContent = "保存水印照片";
+          primaryIcon.innerHTML = '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/>';
+          primaryButton.disabled = false;
+        } else {
+          primaryLabel.textContent = "正在处理…";
+          primaryButton.disabled = true;
+        }
+      }
+
+      async function startCamera() {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          showToast("当前浏览器无法直接打开相机，请选择照片继续。", "error");
+          fileInput.click();
+          return;
+        }
+
+        setPrimaryMode("busy");
+        try {
+          stopStream();
+          state.stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 2560 } },
+            audio: false
+          });
+          video.srcObject = state.stream;
+          await video.play();
+          state.hasPhoto = false;
+          previewCanvas.classList.remove("active");
+          video.classList.add("active");
+          emptyState.classList.add("hidden");
+          cameraStage.classList.add("streaming");
+          setStatus("live");
+          setPrimaryMode("camera");
+          primaryLabel.textContent = "点击圆形快门拍摄";
+        } catch (error) {
+          console.warn(error);
+          setStatus("idle");
+          setPrimaryMode("camera");
+          showToast("未能打开相机。请允许相机权限，或选择手机里的照片。", "error");
+        }
+      }
+
+      function stopStream() {
+        if (state.stream) {
+          state.stream.getTracks().forEach(track => track.stop());
+          state.stream = null;
+        }
+        video.srcObject = null;
+        cameraStage.classList.remove("streaming");
+      }
+
+      function capturePhoto() {
+        if (!video.videoWidth || !video.videoHeight) {
+          showToast("相机画面还没有准备好，请稍候再试。", "error");
+          return;
+        }
+        setStatus("loading");
+        state.sourceCanvas.width = video.videoWidth;
+        state.sourceCanvas.height = video.videoHeight;
+        state.sourceCanvas.getContext("2d", { alpha: false }).drawImage(video, 0, 0);
+        stopStream();
+        commitPhoto();
+      }
+
+      function loadFile(file) {
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+          showToast("请选择 JPG、PNG 等图片文件。", "error");
+          return;
+        }
+        setStatus("loading");
+        setPrimaryMode("busy");
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const maxEdge = 4096;
+          const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth, img.naturalHeight));
+          state.sourceCanvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+          state.sourceCanvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+          state.sourceCanvas.getContext("2d", { alpha: false }).drawImage(img, 0, 0, state.sourceCanvas.width, state.sourceCanvas.height);
+          URL.revokeObjectURL(url);
+          stopStream();
+          commitPhoto();
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          setStatus("idle");
+          setPrimaryMode("camera");
+          showToast("这张图片无法读取，请换一张再试。", "error");
+        };
+        img.src = url;
+      }
+
+      function commitPhoto() {
+        state.hasPhoto = true;
+        video.classList.remove("active");
+        previewCanvas.classList.add("active");
+        previewCanvas.classList.remove("stamped");
+        void previewCanvas.offsetWidth;
+        previewCanvas.classList.add("stamped");
+        emptyState.classList.add("hidden");
+        watermarkPreview.style.display = "none";
+        renderPreview();
+        setStatus("ready");
+        setPrimaryMode("save");
+        cameraStage.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function roundedRect(ctx, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + width, y, x + width, y + height, r);
+        ctx.arcTo(x + width, y + height, x, y + height, r);
+        ctx.arcTo(x, y + height, x, y, r);
+        ctx.arcTo(x, y, x + width, y, r);
+        ctx.closePath();
+      }
+
+      function wrapText(ctx, text, maxWidth) {
+        const chars = Array.from(text || "请输入地址");
+        const lines = [];
+        let line = "";
+        for (const char of chars) {
+          const test = line + char;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line);
+            line = char;
+          } else {
+            line = test;
+          }
+        }
+        if (line) lines.push(line);
+        return lines;
+      }
+
+      function drawWatermark(ctx, width, height) {
+        const short = Math.min(width, height);
+        const addressSize = Math.max(28, Math.round(short * .043));
+        const timeSize = Math.max(20, Math.round(addressSize * .64));
+        const padX = Math.round(addressSize * .55);
+        const padY = Math.round(addressSize * .38);
+        const gap = Math.max(5, Math.round(addressSize * .12));
+        const margin = Math.max(24, Math.round(short * .035));
+        const maxTextWidth = Math.min(width * .76, 1100);
+
+        ctx.textBaseline = "top";
+        ctx.font = `800 ${addressSize}px ${getComputedStyle(document.body).fontFamily}`;
+        const lines = wrapText(ctx, address.value.trim(), maxTextWidth);
+        const addressTextWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+        const addressLineHeight = Math.round(addressSize * 1.25);
+        const addressBoxWidth = addressTextWidth + padX * 2;
+        const addressBoxHeight = lines.length * addressLineHeight + padY * 2;
+
+        ctx.font = `650 ${timeSize}px ${getComputedStyle(document.body).fontFamily}`;
+        const timeText = formattedTime();
+        const timeBoxWidth = ctx.measureText(timeText).width + padX * 1.6;
+        const timeBoxHeight = timeSize + padY * 1.5;
+        const totalHeight = timeBoxHeight + gap + addressBoxHeight;
+        const rightAligned = state.position.endsWith("right");
+        const bottomAligned = state.position.startsWith("bottom");
+        const anchorX = rightAligned ? width - margin : margin;
+        const baseY = bottomAligned ? height - margin - totalHeight : margin;
+        const timeX = rightAligned ? anchorX - timeBoxWidth : anchorX;
+        const addressX = rightAligned ? anchorX - addressBoxWidth : anchorX;
+        const radius = Math.max(8, Math.round(addressSize * .2));
+
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,.32)";
+        ctx.shadowBlur = Math.round(addressSize * .35);
+        ctx.shadowOffsetY = Math.round(addressSize * .18);
+
+        ctx.fillStyle = "rgba(14,24,48,.86)";
+        roundedRect(ctx, timeX, baseY, timeBoxWidth, timeBoxHeight, radius);
+        ctx.fill();
+
+        ctx.fillStyle = state.style === "plate" ? "#114ccf" : "rgba(7,13,25,.86)";
+        roundedRect(ctx, addressX, baseY + timeBoxHeight + gap, addressBoxWidth, addressBoxHeight, radius);
+        ctx.fill();
+        ctx.shadowColor = "transparent";
+
+        ctx.fillStyle = state.style === "plate" ? "#f2b705" : "#ffffff";
+        ctx.fillRect(addressX, baseY + timeBoxHeight + gap + addressBoxHeight - Math.max(5, addressSize * .11), addressBoxWidth, Math.max(5, addressSize * .11));
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `650 ${timeSize}px ${getComputedStyle(document.body).fontFamily}`;
+        ctx.fillText(timeText, timeX + padX * .8, baseY + padY * .7);
+
+        ctx.font = `800 ${addressSize}px ${getComputedStyle(document.body).fontFamily}`;
+        const textStartY = baseY + timeBoxHeight + gap + padY;
+        lines.forEach((line, index) => ctx.fillText(line, addressX + padX, textStartY + index * addressLineHeight));
+        ctx.restore();
+      }
+
+      function renderPreview() {
+        if (!state.hasPhoto) return;
+        previewCanvas.width = state.sourceCanvas.width;
+        previewCanvas.height = state.sourceCanvas.height;
+        const ctx = previewCanvas.getContext("2d", { alpha: false });
+        ctx.drawImage(state.sourceCanvas, 0, 0);
+        drawWatermark(ctx, previewCanvas.width, previewCanvas.height);
+      }
+
+      function savePhoto() {
+        if (!state.hasPhoto) return startCamera();
+        if (!address.value.trim()) {
+          address.focus();
+          showToast("请先输入地址，再保存照片。", "error");
+          return;
+        }
+        if (!dateTime.value || Number.isNaN(new Date(dateTime.value).getTime())) {
+          dateTime.focus();
+          showToast("请选择有效的日期与时间，再保存照片。", "error");
+          return;
+        }
+        renderPreview();
+        setPrimaryMode("busy");
+        previewCanvas.toBlob(blob => {
+          if (!blob) {
+            setPrimaryMode("save");
+            showToast("照片生成失败，请重新拍摄或选择较小的照片。", "error");
+            return;
+          }
+          const stamp = formattedTime().replace(/\D/g, "").slice(0, 14);
+          const filename = `水印照片_${stamp}.jpg`;
+          try {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            showToast("水印照片已保存，请在下载内容中查看。");
+          } catch (error) {
+            if (error?.name !== "AbortError") showToast("未能完成保存，请再试一次。", "error");
+          } finally {
+            setPrimaryMode("save");
+          }
+        }, "image/jpeg", .92);
+      }
+
+      dateTime.value = localInputValue();
+      address.value = DEFAULT_ADDRESS;
+      syncWatermark();
+
+      dateTime.addEventListener("input", syncWatermark);
+      address.addEventListener("input", syncWatermark);
+      document.getElementById("resetTime").addEventListener("click", () => {
+        dateTime.value = localInputValue();
+        syncWatermark();
+        showToast("已恢复为当前时间。");
+      });
+      document.getElementById("resetAddress").addEventListener("click", () => {
+        address.value = DEFAULT_ADDRESS;
+        syncWatermark();
+        showToast("已恢复默认地址。");
+      });
+
+      document.getElementById("positionControl").addEventListener("click", event => {
+        const button = event.target.closest("button[data-position]");
+        if (!button) return;
+        state.position = button.dataset.position;
+        button.parentElement.querySelectorAll("button").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+        syncWatermark();
+      });
+
+      document.getElementById("styleControl").addEventListener("click", event => {
+        const button = event.target.closest("button[data-style]");
+        if (!button) return;
+        state.style = button.dataset.style;
+        button.parentElement.querySelectorAll("button").forEach(item => item.setAttribute("aria-pressed", String(item === button)));
+        syncWatermark();
+      });
+
+      document.getElementById("shutterButton").addEventListener("click", capturePhoto);
+      document.getElementById("emptyCameraButton").addEventListener("click", startCamera);
+      document.getElementById("emptyPickButton").addEventListener("click", () => fileInput.click());
+      primaryButton.addEventListener("click", () => state.hasPhoto ? savePhoto() : startCamera());
+      pickButton.addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", event => {
+        loadFile(event.target.files?.[0]);
+        event.target.value = "";
+      });
+      window.addEventListener("pagehide", stopStream);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-03T13:25:11Z",
+  "title": "Design System: 现场水印相机",
+  "extensions": {
+    "colorMeta": {
+      "ink-navy": {
+        "role": "neutral",
+        "displayName": "Ink Navy",
+        "canonical": "#0e1830",
+        "tonalRamp": ["oklch(15% 0.050 265.4)", "oklch(27% 0.050 265.4)", "oklch(39% 0.050 265.4)", "oklch(51% 0.050 265.4)", "oklch(63% 0.050 265.4)", "oklch(75% 0.050 265.4)", "oklch(87% 0.050 265.4)", "oklch(95% 0.050 265.4)"]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "#41506b",
+        "tonalRamp": ["oklch(15% 0.049 261.9)", "oklch(27% 0.049 261.9)", "oklch(39% 0.049 261.9)", "oklch(51% 0.049 261.9)", "oklch(63% 0.049 261.9)", "oklch(75% 0.049 261.9)", "oklch(87% 0.049 261.9)", "oklch(95% 0.049 261.9)"]
+      },
+      "daylight-paper": {
+        "role": "neutral",
+        "displayName": "Daylight Paper",
+        "canonical": "#f4f7fb",
+        "tonalRamp": ["oklch(15% 0.006 255.5)", "oklch(27% 0.006 255.5)", "oklch(39% 0.006 255.5)", "oklch(51% 0.006 255.5)", "oklch(63% 0.006 255.5)", "oklch(75% 0.006 255.5)", "oklch(87% 0.006 255.5)", "oklch(95% 0.006 255.5)"]
+      },
+      "daylight-white": {
+        "role": "neutral",
+        "displayName": "Daylight White",
+        "canonical": "#ffffff",
+        "tonalRamp": ["oklch(15% 0.000 0)", "oklch(27% 0.000 0)", "oklch(39% 0.000 0)", "oklch(51% 0.000 0)", "oklch(63% 0.000 0)", "oklch(75% 0.000 0)", "oklch(87% 0.000 0)", "oklch(95% 0.000 0)"]
+      },
+      "mineral-line": {
+        "role": "neutral",
+        "displayName": "Mineral Line",
+        "canonical": "#cfd7e4",
+        "tonalRamp": ["oklch(15% 0.020 260.2)", "oklch(27% 0.020 260.2)", "oklch(39% 0.020 260.2)", "oklch(51% 0.020 260.2)", "oklch(63% 0.020 260.2)", "oklch(75% 0.020 260.2)", "oklch(87% 0.020 260.2)", "oklch(95% 0.020 260.2)"]
+      },
+      "municipal-blue": {
+        "role": "primary",
+        "displayName": "Municipal Blue",
+        "canonical": "#114ccf",
+        "tonalRamp": ["oklch(15% 0.210 262.9)", "oklch(27% 0.210 262.9)", "oklch(39% 0.210 262.9)", "oklch(51% 0.210 262.9)", "oklch(63% 0.210 262.9)", "oklch(75% 0.210 262.9)", "oklch(87% 0.210 262.9)", "oklch(95% 0.210 262.9)"]
+      },
+      "municipal-blue-deep": {
+        "role": "primary",
+        "displayName": "Deep Municipal Blue",
+        "canonical": "#0a328f",
+        "tonalRamp": ["oklch(15% 0.159 263.2)", "oklch(27% 0.159 263.2)", "oklch(39% 0.159 263.2)", "oklch(51% 0.159 263.2)", "oklch(63% 0.159 263.2)", "oklch(75% 0.159 263.2)", "oklch(87% 0.159 263.2)", "oklch(95% 0.159 263.2)"]
+      },
+      "safety-amber": {
+        "role": "secondary",
+        "displayName": "Safety Amber",
+        "canonical": "#f2b705",
+        "tonalRamp": ["oklch(15% 0.166 85.0)", "oklch(27% 0.166 85.0)", "oklch(39% 0.166 85.0)", "oklch(51% 0.166 85.0)", "oklch(63% 0.166 85.0)", "oklch(75% 0.166 85.0)", "oklch(87% 0.166 85.0)", "oklch(95% 0.166 85.0)"]
+      },
+      "field-danger": {
+        "role": "tertiary",
+        "displayName": "Field Danger",
+        "canonical": "#b42318",
+        "tonalRamp": ["oklch(15% 0.182 29.5)", "oklch(27% 0.182 29.5)", "oklch(39% 0.182 29.5)", "oklch(51% 0.182 29.5)", "oklch(63% 0.182 29.5)", "oklch(75% 0.182 29.5)", "oklch(87% 0.182 29.5)", "oklch(95% 0.182 29.5)"]
+      },
+      "field-success": {
+        "role": "tertiary",
+        "displayName": "Field Success",
+        "canonical": "#137a46",
+        "tonalRamp": ["oklch(15% 0.121 154.7)", "oklch(27% 0.121 154.7)", "oklch(39% 0.121 154.7)", "oklch(51% 0.121 154.7)", "oklch(63% 0.121 154.7)", "oklch(75% 0.121 154.7)", "oklch(87% 0.121 154.7)", "oklch(95% 0.121 154.7)"]
+      }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Short instructional or empty-state headings." },
+      "title": { "displayName": "Title", "purpose": "Compact identity and tool titles." },
+      "body": { "displayName": "Body", "purpose": "Field values and general interface copy." },
+      "label": { "displayName": "Label", "purpose": "Rails, field labels, state labels, and compact controls." },
+      "action": { "displayName": "Action", "purpose": "Primary and secondary action labels." },
+      "watermark": { "displayName": "Watermark", "purpose": "Readable address text over mixed imagery." }
+    },
+    "shadows": [
+      { "name": "shell-lift", "value": "0 0 0 1px rgba(0,0,0,.04), 0 24px 80px rgba(0,0,0,.1)", "purpose": "Separates the bounded tool from the desktop paper field." },
+      { "name": "floating-feedback", "value": "0 14px 36px rgba(8,30,72,.16)", "purpose": "Supports transient feedback without modal weight." },
+      { "name": "primary-action-lift", "value": "0 9px 20px rgba(17,76,207,.26)", "purpose": "Reserved for the main blue action." },
+      { "name": "image-overlay-lift", "value": "drop-shadow(0 6px 13px rgba(0,0,0,.34))", "purpose": "Preserves sign legibility over unpredictable imagery." }
+    ],
+    "motion": [
+      { "name": "state-fast", "value": "160ms ease-out", "purpose": "Control hover, press, border, and focus transitions." },
+      { "name": "spatial-emphasis", "value": "400ms cubic-bezier(.16,1,.3,1)", "purpose": "Moves positioned overlays without feeling mechanical." },
+      { "name": "feedback-enter", "value": "340ms cubic-bezier(.16,1,.3,1)", "purpose": "Lifts transient feedback into view." },
+      { "name": "capture-stamp", "value": "480ms cubic-bezier(.16,1,.3,1)", "purpose": "Single brightness-and-scale confirmation when an image becomes a committed record." }
+    ],
+    "breakpoints": [
+      { "name": "narrow-phone", "value": "390px" },
+      { "name": "wide-shell", "value": "760px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The dominant save or continue action in a field workflow.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">保存水印照片</button>",
+      "css": ".ds-btn-primary { min-height: 52px; padding: 10px 14px; border: 1px solid transparent; border-radius: 11px; background: var(--blue, #114ccf); color: #fff; font-family: var(--font, system-ui, sans-serif); font-size: .92rem; font-weight: 850; cursor: pointer; box-shadow: 0 9px 20px rgba(17,76,207,.26); transition: transform .16s ease-out, background .16s ease-out; } .ds-btn-primary:hover { background: var(--blue-dark, #0a328f); } .ds-btn-primary:active { transform: scale(.98); } .ds-btn-primary:focus-visible { outline: 3px solid var(--blue, #114ccf); outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A bordered alternative that stays visibly subordinate to the blue action.",
+      "html": "<button class=\"ds-btn-secondary\" type=\"button\">选择照片</button>",
+      "css": ".ds-btn-secondary { min-height: 52px; padding: 10px 14px; border: 1px solid #aeb9ca; border-radius: 11px; background: var(--surface, #fff); color: var(--ink, #0e1830); font-family: var(--font, system-ui, sans-serif); font-size: .92rem; font-weight: 850; cursor: pointer; transition: transform .16s ease-out, background .16s ease-out, border-color .16s ease-out; } .ds-btn-secondary:hover { background: #f0f4fa; border-color: #8290a6; } .ds-btn-secondary:active { transform: scale(.98); } .ds-btn-secondary:focus-visible { outline: 3px solid var(--blue, #114ccf); outline-offset: 3px; }"
+    },
+    {
+      "name": "Field Input",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "A daylight-readable metadata field with a strong blue focus state.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">地址</span><input class=\"ds-field-input\" type=\"text\" value=\"上海市浦东新区张江路 88 号\"></label>",
+      "css": ".ds-field { display: grid; gap: 7px; color: var(--ink, #0e1830); font-family: var(--font, system-ui, sans-serif); } .ds-field-label { font-size: .86rem; font-weight: 800; } .ds-field-input { width: 100%; min-height: 50px; padding: 11px 13px; border: 1px solid #aeb9ca; border-radius: 10px; background: #fff; color: var(--ink, #0e1830); font: inherit; transition: border-color .16s ease-out, box-shadow .16s ease-out; } .ds-field-input:hover { border-color: #7d8ba3; } .ds-field-input:focus { border-color: var(--blue, #114ccf); box-shadow: 0 0 0 3px rgba(17,76,207,.14); outline: 0; } .ds-field-input:focus-visible { outline: 3px solid var(--blue, #114ccf); outline-offset: 3px; }"
+    },
+    {
+      "name": "Segmented Choice",
+      "kind": "custom",
+      "refersTo": "segment-option-selected",
+      "description": "A compact two-option selector for mutually exclusive field settings.",
+      "html": "<div class=\"ds-segmented\" role=\"group\" aria-label=\"水印样式\"><button type=\"button\" aria-pressed=\"true\">蓝牌</button><button type=\"button\" aria-pressed=\"false\">黑底</button></div>",
+      "css": ".ds-segmented { display: grid; grid-template-columns: repeat(2, 1fr); overflow: hidden; border: 1px solid #aeb9ca; border-radius: 10px; background: #f7f9fc; font-family: var(--font, system-ui, sans-serif); } .ds-segmented button { min-height: 44px; border: 0; border-right: 1px solid #c9d1de; background: transparent; color: var(--ink, #0e1830); font-size: .78rem; font-weight: 750; cursor: pointer; } .ds-segmented button:last-child { border-right: 0; } .ds-segmented button[aria-pressed=\"true\"] { background: var(--blue, #114ccf); color: #fff; } .ds-segmented button:hover:not([aria-pressed=\"true\"]) { background: #f0f4fa; } .ds-segmented button:focus-visible { position: relative; outline: 3px solid var(--blue, #114ccf); outline-offset: -3px; }"
+    },
+    {
+      "name": "Local Processing Status",
+      "kind": "chip",
+      "description": "A compact positive status badge for local or safe processing states.",
+      "html": "<span class=\"ds-local-status\"><span class=\"ds-status-dot\" aria-hidden=\"true\"></span>本机处理</span>",
+      "css": ".ds-local-status { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; border-radius: 999px; background: #e8f6ef; color: var(--ok, #137a46); font-family: var(--font, system-ui, sans-serif); font-size: .75rem; font-weight: 700; white-space: nowrap; } .ds-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }"
+    },
+    {
+      "name": "Enamel Address Plate",
+      "kind": "custom",
+      "refersTo": "watermark-address",
+      "description": "The signature two-tier timestamp and address overlay for mixed imagery.",
+      "html": "<div class=\"ds-watermark\"><div class=\"ds-watermark-time\">2026.10.03&nbsp;&nbsp;21:25:11</div><div class=\"ds-watermark-address\">上海市浦东新区张江路 88 号</div></div>",
+      "css": ".ds-watermark { display: inline-grid; justify-items: start; color: #fff; font-family: var(--font, system-ui, sans-serif); filter: drop-shadow(0 6px 13px rgba(0,0,0,.34)); } .ds-watermark-time { margin-bottom: 3px; padding: 4px 9px; background: rgba(14,24,48,.82); font-size: .8rem; font-variant-numeric: tabular-nums; letter-spacing: .04em; } .ds-watermark-address { padding: 8px 11px 9px; border-bottom: 4px solid var(--amber, #f2b705); background: var(--blue, #114ccf); font-size: 1.12rem; font-weight: 800; line-height: 1.28; letter-spacing: -.015em; }"
+    },
+    {
+      "name": "Operational Toast",
+      "kind": "custom",
+      "description": "Compact, nonblocking feedback for successful or failed operations.",
+      "html": "<div class=\"ds-toast\" role=\"status\">水印照片已准备好</div>",
+      "css": ".ds-toast { width: min(100%, 420px); padding: 12px 14px; border-radius: 10px; background: var(--ink, #0e1830); color: #fff; font-family: var(--font, system-ui, sans-serif); font-size: .86rem; font-weight: 650; box-shadow: 0 14px 36px rgba(8,30,72,.16); transition: opacity .24s ease-out, transform .34s cubic-bezier(.16,1,.3,1); } .ds-toast:hover { transform: translateY(-2px); } .ds-toast:focus-visible { outline: 3px solid var(--blue, #114ccf); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Enamel Street Plate",
+    "overview": "The system feels like a piece of civic field equipment: daylight white and mineral gray form the work surface, while municipal blue supplies the authority and instant recognition of an enamel address sign. Ink navy keeps information legible without the glare of pure black, and a narrow safety-amber signal marks decisive capture-related moments.\n\nThe visual language is dense, direct, and structural. Full-width rails, visible alignment, and compact labels organize information without relying on floating cards. Mildly rounded controls remain practical for touch, while square-cut sign geometry preserves the municipal character. Expression always yields to capture state, metadata legibility, and outdoor contrast.",
+    "keyCharacteristics": [
+      "Municipal blue as the single dominant identity and interaction color.",
+      "Daylight-ready contrast with ink navy text on white or mineral-gray surfaces.",
+      "Structural rails and shared gutters instead of decorative card stacks.",
+      "Compact information density with touch targets of at least 44px.",
+      "Square-cut enamel-sign geometry balanced by restrained control rounding.",
+      "One purposeful capture-stamp motion moment, with reduced-motion support."
+    ],
+    "rules": [
+      { "name": "The Signal Color Rule", "body": "Municipal blue carries identity and selection; safety amber appears only at capture-related moments or as the address-plate rule, never as generic decoration.", "section": "colors" },
+      { "name": "The Daylight Contrast Rule", "body": "Default to ink navy on daylight white and reserve translucent light text treatments for dark image-backed regions with a supporting overlay.", "section": "colors" },
+      { "name": "The Field-Legibility Rule", "body": "Use the Chinese system sans stack and tabular numerals for timestamps; core comprehension must never depend on a downloaded font.", "section": "typography" },
+      { "name": "The Structural Rail Rule", "body": "Use full-width rails, shared 18px gutters, and visible one-pixel boundaries to establish hierarchy; do not replace them with a stack of detached cards.", "section": "layout" },
+      { "name": "The Flat-Until-Useful Rule", "body": "Keep working surfaces flat at rest; add elevation only when it clarifies containment, action priority, or legibility over imagery.", "section": "elevation" },
+      { "name": "The Civic Geometry Rule", "body": "Keep rails and address plates square-cut, controls mildly rounded, and use pills or circles only when their meaning is inherently status- or camera-related.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do use municipal blue for primary actions, selected states, focus, and the signature address plate.",
+      "Do preserve 44px or larger touch targets even when labels and spacing remain compact.",
+      "Do align related content to the shared 18px gutter and separate groups with rails, tone, or one-pixel lines.",
+      "Do keep the system Chinese font stack and high daylight contrast for offline, outdoor legibility.",
+      "Do reserve the capture-stamp animation for the moment an image becomes a committed record and honor reduced-motion preferences."
+    ],
+    "donts": [
+      "Don't scatter safety amber across ordinary controls or secondary decoration.",
+      "Don't turn every group into a rounded floating card or add ornamental gradients to working surfaces.",
+      "Don't use low-contrast gray for critical state, metadata, or actionable text.",
+      "Don't add continuous camera, watermark, or status animation; motion must confirm a state change.",
+      "Don't introduce a webfont dependency, oversized display typography, or marketing-style spaciousness into dense field controls."
+    ]
+  }
+}
