@@ -30,11 +30,12 @@ The product is used outdoors and on-site, often one-handed and under mixed light
 
 - Target recent Android Chrome and common Chromium-based Android browsers.
 - Prefer the rear camera and fall back to the system camera/photo picker.
+- Crop camera and gallery images from the center into a fixed 9:16 portrait frame and export at 1080 × 1920 pixels without stretching.
 - Do not request location permission or collect coordinates.
 - Prefill an editable address from a single configuration value.
 - Allow restoring the configured default address and current local time.
 - Generate the final JPG locally in the browser and provide save/share actions where supported.
-- Correct common phone-photo orientation and preserve useful output resolution within device memory limits.
+- Correct common phone-photo orientation and preserve the fixed 1080 × 1920 output within device memory limits.
 - Camera access requires HTTPS on most mobile browsers.
 - Open decision: the real production default address is not yet supplied. The first prototype uses a clearly replaceable demonstration address.
 

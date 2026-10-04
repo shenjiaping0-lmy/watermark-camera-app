@@ -179,7 +179,7 @@ The palette combines civic authority with field-tool clarity: blue establishes t
 
 The system is mobile-first and centered inside a single working shell. The shell fills the viewport on phones and stops at 620px on larger displays. Its primary structural inset is an 18px gutter, repeated across rails, fields, action zones, and supporting notes.
 
-Viewfinder or media surfaces may run edge to edge inside the shell and use a 4:5 frame, with overlays aligned to 16px internal offsets. Secondary information stays compact and follows a 7–14px internal rhythm. Full-width rails separate modes or groups; they should not become floating containers.
+Viewfinder or media surfaces may run edge to edge inside the shell and use a 9:16 portrait frame, with overlays aligned to 16px internal offsets. Secondary information stays compact and follows a 7–14px internal rhythm. Full-width rails separate modes or groups; they should not become floating containers.
 
 At 390px and below, dense two-column control groups collapse to one column and nonessential badge text may reduce to an icon or status dot while preserving the touch target. At 760px and above, the shell gains outer breathing room and an 18px clipped corner; sticky phone chrome returns to normal document flow.
 
