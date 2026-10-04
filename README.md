@@ -4,7 +4,8 @@
 
 ## 在线体验
 
-[打开现场水印相机](https://field-watermark-camera.shenjiaping0.chatgpt.site)
+- [GitHub Pages 公共地址](https://shenjiaping0-lmy.github.io/watermark-camera-app/)
+- [OpenAI Sites 地址](https://field-watermark-camera.shenjiaping0.chatgpt.site)
 
 ## 功能
 
